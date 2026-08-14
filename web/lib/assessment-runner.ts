@@ -100,8 +100,7 @@ async function runInIsolatedTempDir(
         timeout: RUN_TIMEOUT_MS,
         maxBuffer: MAX_OUTPUT_BYTES,
         env: {
-          NODE_ENV: process.env.NODE_ENV ?? "production",
-          PATH: process.env.PATH ?? "",
+          ...(process.env || {}),
           HOME: sharedGoHome,
           GOCACHE: sharedGoCache,
           GOPATH: sharedGoPath,
@@ -116,8 +115,16 @@ async function runInIsolatedTempDir(
       stderr?: string;
       killed?: boolean;
       signal?: string | null;
+      code?: string | number;
       message: string;
     };
+    if((execError as any).code === 'ENOENT') {
+      return {
+        passed: false,
+        output:
+          "Go toolchain not found: spawn go ENOENT. Install Go and ensure the 'go' binary is on PATH.",
+      };
+    }
 
     if (execError.killed || execError.signal) {
       return { passed: false, output: "Test run timed out after 10 seconds." };
