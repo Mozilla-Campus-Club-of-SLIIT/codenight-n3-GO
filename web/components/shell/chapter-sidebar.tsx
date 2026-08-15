@@ -140,6 +140,7 @@ export function ChapterSidebar({
                 <div key={category.id} className="mb-1">
                   <Link
                     href={`/learn/${category.id}/${category.topics[0]?.id}`}
+                    prefetch={true}
                     className={cn(
                       "flex items-baseline gap-2 px-3 py-1.5 text-xs transition-colors",
                       open
@@ -164,6 +165,7 @@ export function ChapterSidebar({
                           <li key={topic.id}>
                             <Link
                               href={href}
+                              prefetch={true}
                               className={cn(
                                 "-ms-px flex border-s-2 py-1.5 ps-3 pe-2 text-xs transition-colors",
                                 pathname === href
@@ -180,6 +182,7 @@ export function ChapterSidebar({
                       <li>
                         <Link
                           href={`/learn/${category.id}/quiz`}
+                          prefetch={true}
                           className={cn(
                             "-ms-px flex items-center gap-1.5 border-s-2 py-1.5 ps-3 pe-2 text-xs transition-colors",
                             pathname === `/learn/${category.id}/quiz`

@@ -63,6 +63,7 @@ async function AssessmentPageContent() {
               <li key={exercise.id}>
                 <Link
                   href={`/assessment/${exercise.id}`}
+                  prefetch={true}
                   className="flex items-center gap-3 border border-border bg-card p-4 transition-colors hover:border-primary/40"
                 >
                   <span className="font-mono text-xs text-primary">

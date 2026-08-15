@@ -1,4 +1,5 @@
-import { and, eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { db } from "@/db/drizzle";
@@ -40,7 +41,7 @@ export async function POST(
     );
   }
 
-  const testCode = readRepoFile(exercise.testPath);
+  const testCode = await readRepoFile(exercise.testPath);
   if (testCode === null) {
     return NextResponse.json({ error: "Test file missing" }, { status: 500 });
   }
@@ -48,41 +49,30 @@ export async function POST(
   const fixtures = getFixtureFiles(exercise);
   const { passed, output } = await runGoTest(code, testCode, fixtures);
 
-  const [existing] = await db
-    .select({
-      id: assessmentProgress.id,
-      attempts: assessmentProgress.attempts,
-    })
-    .from(assessmentProgress)
-    .where(
-      and(
-        eq(assessmentProgress.userId, session.userId),
-        eq(assessmentProgress.exerciseId, exerciseId),
-      ),
-    )
-    .limit(1);
-
-  if (existing) {
-    await db
-      .update(assessmentProgress)
-      .set({
-        code,
-        passed,
-        output,
-        attempts: existing.attempts + 1,
-        updatedAt: new Date(),
-      })
-      .where(eq(assessmentProgress.id, existing.id));
-  } else {
-    await db.insert(assessmentProgress).values({
+  await db
+    .insert(assessmentProgress)
+    .values({
       id: crypto.randomUUID(),
       userId: session.userId,
       exerciseId,
       code,
       passed,
       output,
+      attempts: 1,
+      updatedAt: new Date(),
+    })
+    .onConflictDoUpdate({
+      target: [assessmentProgress.userId, assessmentProgress.exerciseId],
+      set: {
+        code,
+        passed,
+        output,
+        attempts: sql`${assessmentProgress.attempts} + 1`,
+        updatedAt: new Date(),
+      },
     });
-  }
+
+  revalidateTag("leaderboard", "max");
 
   return NextResponse.json({ passed, output });
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Suspense, ViewTransition } from "react";
+
 import { SuspenseLoader } from "@/components/common/suspense-loader";
 import { LessonNav } from "@/components/lesson/lesson-nav";
 import {
@@ -9,7 +10,6 @@ import {
   getTopic,
   readRepoFile,
 } from "@/lib/content";
-
 import { renderMarkdown } from "@/lib/markdown";
 
 export function generateStaticParams() {
@@ -27,52 +27,55 @@ export default function LessonPage({
   params: Promise<{ chapter: string; lesson: string }>;
 }) {
   return (
-    <main className="min-h-0 flex-1 overflow-y-auto">
-      <div className="mx-auto max-w-3xl px-6 py-10">
-        <ViewTransition name="lessonContent" share="auto">
-          <Suspense fallback={<SuspenseLoader />}>
-            <LessonContent paramsPromise={params} />
-          </Suspense>
-        </ViewTransition>
-      </div>
-    </main>
+    <Suspense fallback={<SuspenseLoader />}>
+      <LessonContent params={params} />
+    </Suspense>
   );
 }
 
 async function LessonContent({
-  paramsPromise,
+  params,
 }: {
-  paramsPromise: Promise<{ chapter: string; lesson: string }>;
+  params: Promise<{ chapter: string; lesson: string }>;
 }) {
-  const { chapter: categoryId, lesson: topicId } = await paramsPromise;
+  const { chapter: categoryId, lesson: topicId } = await params;
 
   const category = getCategory(categoryId);
   const topic = getTopic(categoryId, topicId);
 
   if (!category || !topic) notFound();
 
-  const markdown = readRepoFile(topic.contentPath);
+  const markdown = await readRepoFile(topic.contentPath);
   if (markdown === null) notFound();
 
   const html = await renderMarkdown(markdown);
 
   const { previous, next } = getAdjacentTopics(categoryId, topicId);
-
   return (
-    <div>
-      <p className="text-[0.625rem] font-semibold tracking-widest text-primary uppercase">
-        Chapter {category.number} · {category.title}
-      </p>
-      <h1 className="font-heading mt-2 mb-8 text-3xl font-semibold">
-        {topic.title}
-      </h1>
+    <main className="min-h-0 flex-1 overflow-y-auto">
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <ViewTransition name="lessonContent" share="auto">
+          <div>
+            <p className="text-[0.625rem] font-semibold tracking-widest text-primary uppercase">
+              Chapter {category.number} · {category.title}
+            </p>
+            <h1 className="font-heading mt-2 mb-8 text-3xl font-semibold">
+              {topic.title}
+            </h1>
 
-      <article
-        className="prose prose-invert max-w-none prose-pre:border prose-pre:border-border prose-pre:bg-card"
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: our own markdown
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-      <LessonNav categoryId={categoryId} previous={previous} next={next} />
-    </div>
+            <article
+              className="prose prose-invert max-w-none prose-pre:border prose-pre:border-border prose-pre:bg-card"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: our own markdown
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+            <LessonNav
+              categoryId={categoryId}
+              previous={previous}
+              next={next}
+            />
+          </div>
+        </ViewTransition>
+      </div>
+    </main>
   );
 }

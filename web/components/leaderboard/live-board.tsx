@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
 import { cn } from "@/lib/utils";
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 30_000; // 30 seconds
 const PAGE_SIZE = 10;
 
 export function LiveLeaderboard({
@@ -21,6 +21,7 @@ export function LiveLeaderboard({
 
   useEffect(() => {
     let cancelled = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     async function poll() {
       try {
@@ -31,10 +32,33 @@ export function LiveLeaderboard({
       } catch {}
     }
 
-    const id = setInterval(poll, POLL_INTERVAL_MS);
+    function start() {
+      if (!intervalId) intervalId = setInterval(poll, POLL_INTERVAL_MS);
+    }
+
+    function stop() {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function handleVisibility() {
+      if (document.hidden) {
+        stop();
+      } else {
+        poll();
+        start();
+      }
+    }
+
+    start();
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       cancelled = true;
-      clearInterval(id);
+      stop();
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 

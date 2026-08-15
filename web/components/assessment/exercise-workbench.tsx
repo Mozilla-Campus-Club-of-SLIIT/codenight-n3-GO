@@ -1,6 +1,19 @@
 "use client";
 
-import Editor, { type Monaco } from "@monaco-editor/react";
+import type { Monaco } from "@monaco-editor/react";
+import dynamic from "next/dynamic";
+
+const Editor = dynamic(
+  () => import("@monaco-editor/react").then((m) => m.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center bg-background text-xs text-muted-foreground">
+        Loading editor…
+      </div>
+    ),
+  },
+);
 import {
   CheckIcon,
   FileTextIcon,
@@ -126,8 +139,7 @@ export function ExerciseWorkbench({
             onChange={(value) => setCode(value ?? "")}
             options={{
               minimap: { enabled: false },
-              fontFamily:
-                '"Fira Code", "Cascadia Code", "JetBrains Mono", monospace',
+              fontFamily: "Fira Code",
               fontLigatures: true,
               fontSize: 15,
               fontWeight: "600",

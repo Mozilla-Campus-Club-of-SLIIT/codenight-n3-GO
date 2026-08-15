@@ -23,6 +23,7 @@ export function LessonNav({
             buttonVariants({ variant: "outline" }),
             "h-auto flex-col items-start gap-1 px-4 py-3 normal-case sm:justify-self-start",
           )}
+          prefetch={true}
         >
           <span className="flex items-center gap-1.5 text-[0.625rem] font-semibold tracking-widest text-muted-foreground uppercase">
             <ArrowLeftIcon className="size-3" />
@@ -41,6 +42,7 @@ export function LessonNav({
             buttonVariants({ variant: "outline", size: "sm" }),
             "shrink-0 gap-1.5 normal-case sm:justify-self-center",
           )}
+          prefetch={true}
         >
           <ListChecksIcon className="size-3.5" />
           Chapter Quiz
@@ -52,6 +54,7 @@ export function LessonNav({
       {next ? (
         <Link
           href={`/learn/${next.categoryId}/${next.topicId}`}
+          prefetch={true}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "h-auto flex-col items-end gap-1 px-4 py-3 text-end normal-case sm:justify-self-end",
@@ -66,6 +69,7 @@ export function LessonNav({
       ) : (
         <Link
           href={`/learn/${categoryId}/quiz`}
+          prefetch={true}
           className={cn(
             buttonVariants({ variant: "default" }),
             "h-auto flex-col items-end gap-1 px-4 py-3 text-end normal-case sm:justify-self-end",

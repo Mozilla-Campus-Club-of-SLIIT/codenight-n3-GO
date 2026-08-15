@@ -1,6 +1,7 @@
 import "server-only";
 
 import { eq, sql } from "drizzle-orm";
+import { cacheLife, cacheTag } from "next/cache";
 
 import { db } from "@/db/drizzle";
 import { assessmentProgress, quizProgress, sessions } from "@/db/schema";
@@ -19,54 +20,31 @@ function fallbackName(userId: string): string {
 }
 
 export async function getLeaderboard(limit = 100): Promise<LeaderboardEntry[]> {
-  const [quizTotals, exerciseTotals, allSessions] = await Promise.all([
-    db
-      .select({
-        userId: quizProgress.userId,
-        totalScore: sql<number>`sum(${quizProgress.score})`,
-      })
-      .from(quizProgress)
-      .groupBy(quizProgress.userId),
-    db
-      .select({
-        userId: assessmentProgress.userId,
-        passedCount: sql<number>`count(*)`,
-      })
-      .from(assessmentProgress)
-      .where(eq(assessmentProgress.passed, true))
-      .groupBy(assessmentProgress.userId),
-    db
-      .select({ userId: sessions.userId, displayName: sessions.displayName })
-      .from(sessions),
-  ]);
+  "use cache";
+  cacheTag("leaderboard");
+  cacheLife("minutes");
 
-  const nameByUserId = new Map(
-    allSessions.map((row) => [row.userId, row.displayName]),
-  );
-  const scoreByUserId = new Map<string, number>();
+  const rows = await db
+    .select({
+      userId: sessions.userId,
+      displayName: sessions.displayName,
+      quizScore: sql<number>`coalesce((select sum(${quizProgress.score}) from ${quizProgress} where ${quizProgress.userId} = ${sessions.userId}), 0)`,
+      passedCount: sql<number>`coalesce((select count(*) from ${assessmentProgress} where ${assessmentProgress.userId} = ${sessions.userId} and ${assessmentProgress.passed} = true), 0)`,
+    })
+    .from(sessions);
 
-  for (const row of quizTotals) {
-    const points = Number(row.totalScore ?? 0) * POINTS_PER_QUIZ_QUESTION;
-    scoreByUserId.set(
-      row.userId,
-      (scoreByUserId.get(row.userId) ?? 0) + points,
-    );
-  }
-  for (const row of exerciseTotals) {
-    const points = Number(row.passedCount ?? 0) * POINTS_PER_PASSED_EXERCISE;
-    scoreByUserId.set(
-      row.userId,
-      (scoreByUserId.get(row.userId) ?? 0) + points,
-    );
-  }
-
-  return Array.from(scoreByUserId.entries())
-    .filter(([, score]) => score > 0)
-    .map(([userId, score]) => ({
-      userId,
-      displayName: nameByUserId.get(userId) || fallbackName(userId),
-      score,
-    }))
+  return rows
+    .map((row) => {
+      const score =
+        Number(row.quizScore) * POINTS_PER_QUIZ_QUESTION +
+        Number(row.passedCount) * POINTS_PER_PASSED_EXERCISE;
+      return {
+        userId: row.userId,
+        displayName: row.displayName || fallbackName(row.userId),
+        score,
+      };
+    })
+    .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit);
 }

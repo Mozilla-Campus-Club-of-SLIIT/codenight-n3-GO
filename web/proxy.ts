@@ -14,16 +14,6 @@ const AUTH_ONLY_PATHS = new Set(["/login"]);
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Skip static files, Next.js internal routes, and public assets
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.startsWith("/assets") ||
-    pathname.match(/\.(png|jpg|jpeg|svg|ico|webp|css|js|woff2?)$/)
-  ) {
-    return NextResponse.next();
-  }
-
   const sessionCookie = request.cookies.get("sliit_session")?.value;
   const isAuthenticated = Boolean(sessionCookie);
 
@@ -52,5 +42,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|assets).*)"],
 };

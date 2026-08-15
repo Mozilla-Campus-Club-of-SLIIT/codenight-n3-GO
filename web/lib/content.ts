@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const repoRoot = path.join(process.cwd(), "..");
@@ -124,16 +125,18 @@ export function getTopic(
   return getCategory(categoryId)?.topics.find((topic) => topic.id === topicId);
 }
 
-export function readRepoFile(relativePath: string): string | null {
+export async function readRepoFile(
+  relativePath: string,
+): Promise<string | null> {
   try {
-    return readFileSync(path.join(repoRoot, relativePath), "utf-8");
+    return await readFile(path.join(repoRoot, relativePath), "utf-8");
   } catch {
     return null;
   }
 }
 
-function readQuiz(relativePath: string): Quiz | null {
-  const raw = readRepoFile(relativePath);
+async function readQuiz(relativePath: string): Promise<Quiz | null> {
+  const raw = await readRepoFile(relativePath);
   if (raw === null) return null;
   try {
     return JSON.parse(raw) as Quiz;
@@ -142,7 +145,7 @@ function readQuiz(relativePath: string): Quiz | null {
   }
 }
 
-export function getChapterQuiz(categoryId: string): Quiz | null {
+export async function getChapterQuiz(categoryId: string): Promise<Quiz | null> {
   const category = getCategory(categoryId);
   if (!category) return null;
   return readQuiz(category.quizPath);
