@@ -5,7 +5,7 @@
   "scripts": {
     "precontent": "node scripts/copy-content.mjs",
     "dev": "npm run precontent && next dev",
-    "devb": "next build",
+    "devb": "next build --debug --profile",
     "devd": "next dev",
     "build": "npm run precontent && next build",
     "start": "next start",

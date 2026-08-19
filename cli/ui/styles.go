@@ -4,13 +4,21 @@ import "github.com/charmbracelet/lipgloss"
 
 var (
 	// Palette Colors
-	ColorPrimary   = lipgloss.Color("208") // Mozilla Orange
-	ColorSuccess   = lipgloss.Color("42")  // Green
-	ColorFailure   = lipgloss.Color("196") // Red
-	ColorPending   = lipgloss.Color("240") // Dark Gray
-	ColorHighlight = lipgloss.Color("51")  // Cyan / Bright Blue
-	ColorBg        = lipgloss.Color("234") // Dark Background
-	ColorCardBg    = lipgloss.Color("235") // Card Background
+	ColorPrimary    = lipgloss.Color("208") // Mozilla Orange
+	ColorSuccess    = lipgloss.Color("42")  // Green
+	ColorFailure    = lipgloss.Color("196") // Red
+	ColorPending    = lipgloss.Color("240") // Dark Gray
+	ColorHighlight  = lipgloss.Color("51")  // Cyan / Bright Blue
+	ColorBg         = lipgloss.Color("234") // Dark Background
+	ColorCardBg     = lipgloss.Color("235") // Card Background
+	ColorFocusBg    = lipgloss.Color("237") // Focused Card Background
+	ColorPanelBg    = lipgloss.Color("234") // Panel Background
+	ColorBorder     = lipgloss.Color("239") // Border Gray
+	ColorTextMuted  = lipgloss.Color("245") // Muted Text
+
+	// App Container Style (guarantees consistent background across the entire viewport)
+	AppStyle = lipgloss.NewStyle().
+			Background(ColorBg)
 
 	// Main Header & Outer Frame
 	HeaderStyle = lipgloss.NewStyle().
@@ -27,22 +35,35 @@ var (
 			Padding(0, 2)
 
 	ProgressBarFullStyle = lipgloss.NewStyle().
-				Foreground(ColorSuccess)
+				Foreground(ColorSuccess).
+				Background(ColorBg)
 
 	ProgressBarEmptyStyle = lipgloss.NewStyle().
-				Foreground(ColorPending)
+				Foreground(ColorPending).
+				Background(ColorBg)
 
 	// Panel Styles Base
 	LeftPanelStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("240")).
+			BorderForeground(ColorBorder).
+			Background(ColorPanelBg).
 			Padding(0, 1).
 			MarginRight(1)
 
 	RightPanelStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("240")).
+			BorderForeground(ColorBorder).
+			Background(ColorPanelBg).
 			Padding(0, 1)
+
+	// Chapter Section Header inside Left Panel
+	ChapterHeaderStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(ColorHighlight).
+				Background(ColorCardBg).
+				Padding(0, 1).
+				MarginBottom(1).
+				Align(lipgloss.Center)
 
 	// Card Matrix Styles
 	CardWidth  = 16
@@ -71,7 +92,7 @@ var (
 	CardPendingStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(ColorPending).
-			Foreground(lipgloss.Color("246")).
+			Foreground(ColorTextMuted).
 			Background(ColorCardBg).
 			Padding(0, 1).
 			Width(CardWidth).
@@ -83,7 +104,7 @@ var (
 			BorderForeground(ColorHighlight).
 			Bold(true).
 			Foreground(lipgloss.Color("255")).
-			Background(lipgloss.Color("237")).
+			Background(ColorFocusBg).
 			Padding(0, 1).
 			Width(CardWidth).
 			Height(CardHeight).
@@ -93,24 +114,29 @@ var (
 	SectionTitleStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(ColorHighlight).
+				Background(ColorPanelBg).
 				MarginBottom(1)
 
 	BadgeBeginnerStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("42")).
+				Background(ColorPanelBg).
 				Bold(true)
 
 	BadgeIntermediateStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("220")).
+				Background(ColorPanelBg).
 				Bold(true)
 
 	BadgeAdvancedStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.Color("202")).
+				Background(ColorPanelBg).
 				Bold(true)
 
 	FoxBoxStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(ColorPrimary).
 			Foreground(ColorPrimary).
+			Background(ColorPanelBg).
 			Padding(0, 1).
 			MarginTop(1).
 			MarginBottom(1).
@@ -119,8 +145,9 @@ var (
 	// Footer / Controls
 	FooterStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("240")).
+			BorderForeground(ColorBorder).
 			Foreground(lipgloss.Color("248")).
+			Background(ColorBg).
 			Padding(0, 1).
 			MarginTop(0)
 )

@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"path/filepath"
+
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 
+	"github.com/Mozilla-Campus-Club-of-SLIIT/codenight-n3-GO/editor"
 	"github.com/Mozilla-Campus-Club-of-SLIIT/codenight-n3-GO/fox"
 	"github.com/Mozilla-Campus-Club-of-SLIIT/codenight-n3-GO/manifest"
 	"github.com/Mozilla-Campus-Club-of-SLIIT/codenight-n3-GO/runner"
@@ -81,8 +84,8 @@ func (m *Model) recalculateLayout() {
 	m.GridCols = leftCols
 
 	// Calculate GridRows based on terminal height
-	// Available height overhead: 1 title header + 2 footer border = 3 lines
-	availHeight := m.WindowHeight - 4
+	// Available height overhead: 1 title header + chapter header + footer border
+	availHeight := m.WindowHeight - 6
 	maxRows := (availHeight - 4) / 5
 	if maxRows < 1 {
 		maxRows = 1
@@ -93,6 +96,64 @@ func (m *Model) recalculateLayout() {
 	m.GridRows = maxRows
 
 	m.PageSize = m.GridCols * m.GridRows
+}
+
+func (m *Model) jumpToNextChapter() {
+	if len(m.Exercises) == 0 {
+		return
+	}
+	curChap := m.Exercises[m.FocusedIdx].ChapterNumber
+	// Look for first exercise in next chapter
+	for i := m.FocusedIdx; i < len(m.Exercises); i++ {
+		if m.Exercises[i].ChapterNumber > curChap {
+			m.FocusedIdx = i
+			m.Progress.LastID = m.Exercises[m.FocusedIdx].ID
+			manifest.SaveProgress(m.RootDir, m.Progress)
+			return
+		}
+	}
+	// Wrap around to chapter 1
+	m.FocusedIdx = 0
+	m.Progress.LastID = m.Exercises[m.FocusedIdx].ID
+	manifest.SaveProgress(m.RootDir, m.Progress)
+}
+
+func (m *Model) jumpToPrevChapter() {
+	if len(m.Exercises) == 0 {
+		return
+	}
+	curChap := m.Exercises[m.FocusedIdx].ChapterNumber
+	// Look for first exercise in previous chapter
+	for i := m.FocusedIdx; i >= 0; i-- {
+		if m.Exercises[i].ChapterNumber < curChap {
+			// Find the start of that chapter
+			targetChap := m.Exercises[i].ChapterNumber
+			startOfChap := i
+			for j := i; j >= 0; j-- {
+				if m.Exercises[j].ChapterNumber == targetChap {
+					startOfChap = j
+				} else {
+					break
+				}
+			}
+			m.FocusedIdx = startOfChap
+			m.Progress.LastID = m.Exercises[m.FocusedIdx].ID
+			manifest.SaveProgress(m.RootDir, m.Progress)
+			return
+		}
+	}
+	// Wrap around to last chapter
+	lastEx := m.Exercises[len(m.Exercises)-1]
+	lastChap := lastEx.ChapterNumber
+	for i := len(m.Exercises) - 1; i >= 0; i-- {
+		if m.Exercises[i].ChapterNumber == lastChap {
+			m.FocusedIdx = i
+		} else {
+			break
+		}
+	}
+	m.Progress.LastID = m.Exercises[m.FocusedIdx].ID
+	manifest.SaveProgress(m.RootDir, m.Progress)
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -109,7 +170,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if rightWidth < 30 {
 			rightWidth = 30
 		}
-		rightHeight := (m.GridRows * 5)
+		rightHeight := (m.GridRows * 5) + 2
 		if rightHeight < 6 {
 			rightHeight = 6
 		}
@@ -159,8 +220,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				)
 			}
 
+		case "l", "L":
+			if len(m.Exercises) > 0 {
+				curEx := m.Exercises[m.FocusedIdx]
+				fullPath := filepath.Join(m.RootDir, curEx.FilePath)
+				_ = editor.OpenInEditor(fullPath)
+			}
+
 		case "h", "H":
 			m.ShowHint = !m.ShowHint
+
+		case "tab":
+			m.jumpToNextChapter()
+
+		case "shift+tab":
+			m.jumpToPrevChapter()
 
 		case "n", "N":
 			if m.FocusedIdx < len(m.Exercises)-1 {

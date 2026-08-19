@@ -22,11 +22,11 @@ export default function AssessmentExercisePage({
 }) {
   return (
     // fallback={<ViewTransition exit="fade-out"><SuspenseLoader /></ViewTransition>}
-    <Suspense>
+    // <Suspense>
       <ViewTransition enter="fade-in" default="none">
         <AssessmentExerciseContent params={params} />
       </ViewTransition>
-    </Suspense>
+    // </Suspense>
   );
 }
 

@@ -28,7 +28,7 @@ export default function CurriculumPage() {
             <li key={category.id}>
               <Link
                 href={`/learn/${category.id}/${category.topics[0]?.id}`}
-                prefetch={true}
+                // prefetch={true}
                 className="flex items-baseline gap-3 border border-border bg-card p-4 transition-colors hover:border-primary/40"
               >
                 <span className="font-mono text-xs text-primary">

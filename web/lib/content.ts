@@ -128,6 +128,7 @@ export function getTopic(
 export async function readRepoFile(
   relativePath: string,
 ): Promise<string | null> {
+  "use cache";
   try {
     return await readFile(path.join(repoRoot, relativePath), "utf-8");
   } catch {

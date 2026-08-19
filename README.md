@@ -42,7 +42,8 @@ Then launch the runner:
 | :--- | :--- |
 | **`[← ↑ ↓ →]`** | Navigate across exercise cards in the grid |
 | **`[r]` or `[Enter]`** | Run unit tests for selected exercise (with running fox ASCII animation) |
+| **`[l]`** | Open the exercise `.go` file in your preferred editor (VS Code, `$VISUAL`, `$EDITOR`, or default app) |
 | **`[h]`** | Toggle formatted Markdown task explanation & hints |
+| **`[Tab]` / `[Shift+Tab]`** | Jump to Next / Previous Chapter section |
 | **`[n]` / `[p]`** | Jump to Next / Previous exercise |
 | **`[q]` / `[Esc]`** | Quit Gostlings |
-

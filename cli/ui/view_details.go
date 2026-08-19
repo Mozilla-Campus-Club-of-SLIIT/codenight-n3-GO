@@ -39,13 +39,13 @@ func (m Model) RenderRightDetails(rightWidth int, panelHeight int) string {
 	if contentWidth < 30 {
 		contentWidth = 30
 	}
-	wrapStyle := lipgloss.NewStyle().Width(contentWidth)
+	wrapStyle := lipgloss.NewStyle().Width(contentWidth).Background(ColorPanelBg)
 
 	// Header details
 	titleText := fmt.Sprintf("%s (Question %d/3)", curEx.Title, curEx.TopicExerciseNum)
 	title := SectionTitleStyle.Render(titleText)
-	meta := wrapStyle.Render(fmt.Sprintf("Category: %s\nTopic:    %s\nFile:     %s",
-		curEx.CategoryTitle, curEx.TopicTitle, curEx.FilePath))
+	meta := wrapStyle.Render(fmt.Sprintf("Chapter:  %d · %s\nTopic:    %s\nFile:     %s",
+		curEx.ChapterNumber, curEx.CategoryTitle, curEx.TopicTitle, curEx.FilePath))
 
 	// Level badge
 	var levelBadge string
@@ -61,9 +61,9 @@ func (m Model) RenderRightDetails(rightWidth int, panelHeight int) string {
 	}
 
 	// Status string
-	statusStr := lipgloss.NewStyle().Foreground(ColorPending).Render("STATUS: PENDING [ ]")
+	statusStr := lipgloss.NewStyle().Foreground(ColorPending).Background(ColorPanelBg).Render("STATUS: PENDING [ ]")
 	if isPassed {
-		statusStr = lipgloss.NewStyle().Foreground(ColorSuccess).Bold(true).Render("STATUS: PASSED [✓]")
+		statusStr = lipgloss.NewStyle().Foreground(ColorSuccess).Background(ColorPanelBg).Bold(true).Render("STATUS: PASSED [✓]")
 	}
 
 	headerBlock := fmt.Sprintf("%s  %s\n%s\n%s\n", title, levelBadge, meta, statusStr)
@@ -78,24 +78,24 @@ func (m Model) RenderRightDetails(rightWidth int, panelHeight int) string {
 		hintPath := filepath.Join(m.RootDir, curEx.DocPath)
 		data, err := os.ReadFile(hintPath)
 		if err != nil {
-			body = lipgloss.NewStyle().Foreground(ColorFailure).Render("No hint file found.")
+			body = lipgloss.NewStyle().Foreground(ColorFailure).Background(ColorPanelBg).Render("No hint file found.")
 		} else {
 			renderedMd := renderMarkdown(string(data), contentWidth)
 			body = fmt.Sprintf("%s\n%s",
-				lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true).Render("=== TASK EXPLANATION & HINTS ==="),
+				lipgloss.NewStyle().Foreground(ColorHighlight).Background(ColorPanelBg).Bold(true).Render("=== TASK EXPLANATION & HINTS ==="),
 				renderedMd)
 		}
 	} else if m.TestOutput != "" {
-		outputStyle := lipgloss.NewStyle().Foreground(ColorFailure).Width(contentWidth)
+		outputStyle := lipgloss.NewStyle().Foreground(ColorFailure).Background(ColorPanelBg).Width(contentWidth)
 		if isPassed {
-			outputStyle = lipgloss.NewStyle().Foreground(ColorSuccess).Width(contentWidth)
+			outputStyle = lipgloss.NewStyle().Foreground(ColorSuccess).Background(ColorPanelBg).Width(contentWidth)
 		}
 		body = fmt.Sprintf("%s\n%s",
-			lipgloss.NewStyle().Foreground(ColorHighlight).Bold(true).Render("=== LATEST TEST OUTPUT ==="),
+			lipgloss.NewStyle().Foreground(ColorHighlight).Background(ColorPanelBg).Bold(true).Render("=== LATEST TEST OUTPUT ==="),
 			outputStyle.Render(m.TestOutput))
 	} else {
-		body = wrapStyle.Foreground(lipgloss.Color("244")).Render(
-			"Press [r] or [Enter] to run tests for this exercise.\nPress [h] to view task instructions and hints.")
+		body = wrapStyle.Foreground(ColorTextMuted).Render(
+			"Press [r] or [Enter] to run tests for this exercise.\nPress [l] to open source file in your editor.\nPress [h] to view task instructions and hints.")
 	}
 
 	rightContent := lipgloss.JoinVertical(lipgloss.Left, headerBlock, body)
@@ -113,7 +113,7 @@ func (m Model) View() string {
 	}
 
 	// Compute outer panel height matching inner content + borders
-	panelHeight := (m.GridRows * 5) + 4
+	panelHeight := (m.GridRows * 5) + 6
 
 	rightWidth := 52
 	if m.WindowWidth > 0 {
@@ -146,8 +146,9 @@ func (m Model) View() string {
 	mainPanels := lipgloss.JoinHorizontal(lipgloss.Top, leftGrid, rightDetails)
 
 	// 3. Controls / Footer Bar
-	controlsText := " [←↑↓→] Move Focus  |  [r/Enter] Run Test  |  [h] Toggle Hint  |  [n/p] Next/Prev  |  [q] Quit"
+	controlsText := " [←↑↓→] Move  |  [r/Enter] Run Test  |  [l] Edit File  |  [h] Hint  |  [Tab] Chapter  |  [q] Quit"
 	footer := FooterStyle.Render(controlsText)
 
-	return lipgloss.JoinVertical(lipgloss.Left, header, mainPanels, footer)
+	fullUI := lipgloss.JoinVertical(lipgloss.Left, header, mainPanels, footer)
+	return AppStyle.Render(fullUI)
 }

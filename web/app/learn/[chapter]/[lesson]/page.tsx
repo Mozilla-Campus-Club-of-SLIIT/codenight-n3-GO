@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import { Suspense, ViewTransition } from "react";
+import { ViewTransition } from "react";
 
-// import { SuspenseLoader } from "@/components/common/suspense-loader";
 import { LessonNav } from "@/components/lesson/lesson-nav";
 import {
   categories,
@@ -21,19 +20,20 @@ export function generateStaticParams() {
   );
 }
 
-export default function LessonPage({
+export default async function LessonPage({
   params,
 }: {
   params: Promise<{ chapter: string; lesson: string }>;
 }) {
+  "use cache";
   return (
     //  fallback={<ViewTransition exit="fade-out"><SuspenseLoader /></ViewTransition>}
     // enter="fade-in" default="none"
-    <Suspense>
+    // <Suspense>
       <ViewTransition>
         <LessonContent params={params} />
       </ViewTransition>
-    </Suspense>
+    // </Suspense>
   );
 }
 

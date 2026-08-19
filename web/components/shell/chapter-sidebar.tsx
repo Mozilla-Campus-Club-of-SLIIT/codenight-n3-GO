@@ -60,7 +60,7 @@ export function ChapterSidebar({
           )}
         >
           <CodeIcon className="size-3.5" />
-          Editor
+          Final Assessment
         </Link>
 
         <Link

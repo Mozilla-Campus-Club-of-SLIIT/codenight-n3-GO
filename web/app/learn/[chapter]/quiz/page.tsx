@@ -96,8 +96,9 @@ async function ChapterQuizContent({
             chapter.
           </p>
 
+{/* <Suspense fallback={<ViewTransition exit="fade-out"><SuspenseLoader /></ViewTransition>}> */}
           <QuizContainer categoryId={categoryId} renderedQuiz={renderedQuiz} />
-
+{/* </Suspense> */}
           <div className="mt-8 flex items-center justify-between gap-3">
             {firstTopic ? (
               <Link

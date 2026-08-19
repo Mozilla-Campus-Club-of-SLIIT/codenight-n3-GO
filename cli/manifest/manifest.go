@@ -32,7 +32,9 @@ type Exercise struct {
 	FilePath         string `json:"file_path"`
 	TestPath         string `json:"test_path"`
 	DocPath          string `json:"doc_path"`
+	CategoryID       string `json:"-"`
 	CategoryTitle    string `json:"-"`
+	ChapterNumber    int    `json:"-"`
 	TopicTitle       string `json:"-"`
 	Index            int    `json:"-"`
 	TopicExerciseNum int    `json:"-"`
@@ -77,10 +79,12 @@ func LoadManifest(rootDir string) (*Manifest, []Exercise, error) {
 
 	var flat []Exercise
 	idx := 0
-	for _, cat := range m.Categories {
+	for catIdx, cat := range m.Categories {
 		for _, top := range cat.Topics {
 			for topicExIdx, ex := range top.Exercises {
+				ex.CategoryID = cat.ID
 				ex.CategoryTitle = cat.Title
+				ex.ChapterNumber = catIdx + 1
 				ex.TopicTitle = top.Title
 				ex.Index = idx
 				ex.TopicExerciseNum = topicExIdx + 1
